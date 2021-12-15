@@ -1,23 +1,51 @@
 #define PASVOLT (float)(5.0F / 1024.0F)
-#include <LiquidCrystal.h>
+#include <LCD_I2C.h>
+LCD_I2C lcd(0x27, 16, 2); // Default address of most PCF8574 modules, change according
 
-// initialize the library by associating any needed LCD interface pin
-// with the arduino pin number it is connected to
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
-void setup() {
-  lcd.begin(16, 2);
-  lcd.print("Voltmetre");
+void setup()
+{
+  lcd.begin();
+  lcd.backlight();
+  pinMode(2, INPUT);
+  attachInterrupt(INT0, changeType, RISING);
 }
 
+volatile bool etatBoutton = true;
+
 void loop() {
-  unsigned int palier=analogRead(A0);
-  float valeurMesure=palier*PASVOLT;
+  if (etatBoutton)
+  {
+    voltMetre();
+  }
+  else
+  {
+    ohmMetre();
+  }
+}
+
+void voltMetre() {
+  unsigned int mesure = analogRead(A0);
+  float valeurMesure = mesure * PASVOLT;
+  lcd.print("Voltmetre");
   lcd.setCursor(6, 1);
-  lcd.print("          ");
-   lcd.setCursor(6, 1);
   lcd.print(valeurMesure);
   lcd.print("V");
   delay(500);
+  lcd.clear();
+}
+
+void ohmMetre() {
+  unsigned int mesure = analogRead(A0);
+  float valeurMesure = 10000.0F * ((5.0F)/(mesure * PASVOLT))-10000.0F;
+  lcd.print("Ohmmetre");
+  lcd.setCursor(1, 1);
+  lcd.print(valeurMesure);
+  lcd.print(" Ohms");
+  delay(500);
+  lcd.clear();
+}
+
+void changeType() {
+  etatBoutton = !etatBoutton;
 }
