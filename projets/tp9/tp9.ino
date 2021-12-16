@@ -83,10 +83,10 @@ void dht11() {
   lcd.print("Menu 3:  ");
   lcd.setCursor(0, 1);
   lcd.print(event.temperature);
-  lcd.println(F(" C"));
+  lcd.print("C  ");
   
   lcd.print(event.relative_humidity);
-  lcd.println(F("%"));
+  lcd.print("%");
   delay(1000);
   lcd.clear();
 }
