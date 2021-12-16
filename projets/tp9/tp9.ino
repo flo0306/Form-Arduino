@@ -15,7 +15,7 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
   
 void setup() {
   pinMode(2, INPUT);
-  attachInterrupt(INT0,turnOnlight,CHANGE);
+  attachInterrupt(INT0,menuChange,RISING);
   bmp.begin();
   lcd.begin();
   lcd.backlight();
@@ -25,45 +25,44 @@ void setup() {
   mpu.setFilterBandwidth(MPU6050_BAND_94_HZ);
   dht.begin();
 }
-  
-//void loop() {
-//  bool buttonState1=digitalRead(2);
-//
-//  switch() {
-//    case 1 (buttonState1) :
-//    mpu6050 ();
-//    break;
-//    case 2 (buttonState1) :
-//    bmp085 ();
-//    break;
-//   case 3 (buttonState1) :
-//  dht11 ();
-//  break;
-//}
-//}
+
+volatile int menuNum=1;
+
+void loop() {
+  if (menuNum==1){
+  mpu6050 ();  
+  }
+  else if (menuNum==2){
+  bmp085 ();  
+  }
+  else {
+  dht11 ();  
+  } 
+}
 
 void mpu6050 () {
-    lcd.print(bmp.readPressure()/100000.0F);
-    lcd.print("Bar");
+  lcd.print("Menu 1:  ");
+  lcd.print(bmp.readPressure()/100000.0F);
+  lcd.print("Bar");
 
-    lcd.setCursor(0, 1);
-    lcd.print(bmp.readTemperature());
-    lcd.print("C   ");
+  lcd.setCursor(0, 1);
+  lcd.print(bmp.readTemperature());
+  lcd.print("C   ");
    
-    lcd.print(bmp.readAltitude());
-    lcd.print("m");
+  lcd.print(bmp.readAltitude());
+  lcd.print("m");
 
-    delay(800);
-    lcd.clear();
+  delay(1000);
+  lcd.clear();
 }
 
 void bmp085 () {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
+  lcd.print("Menu 2:  ");
   lcd.print("X: ");
   lcd.print(g.gyro.x);
-  lcd.print(" (rad/s)");
  
   lcd.setCursor(0, 1);
   lcd.print("Y: ");
@@ -72,7 +71,7 @@ void bmp085 () {
   lcd.print("  Z: ");
   lcd.print(g.gyro.z);
   
-  delay(800);
+  delay(1000);
   lcd.clear();
 }
 
@@ -80,15 +79,21 @@ void dht11() {
   sensors_event_t event;
   
   dht.temperature().getEvent(&event);
-  lcd.print(F("Temp: "));
+  dht.humidity().getEvent(&event);
+  lcd.print("Menu 3:  ");
+  lcd.setCursor(0, 1);
   lcd.print(event.temperature);
   lcd.println(F(" C"));
   
-  dht.humidity().getEvent(&event);
-  lcd.setCursor(0, 1);
-  lcd.print(F("Humidity: "));
   lcd.print(event.relative_humidity);
   lcd.println(F("%"));
-  delay(800);
+  delay(1000);
   lcd.clear();
+}
+
+void menuChange() {
+ menuNum++;
+ if (menuNum>3){
+  menuNum=1;
+  }
 }
